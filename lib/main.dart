@@ -1,4 +1,5 @@
 import 'package:flipper_card_sample/flipper_card.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -33,6 +34,9 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Tramp> tramps = [];
   List<FlipperCard> cards = [];
   List<GlobalKey<FlipperCardState>> keys = [];
+  int turn = 0;
+  int row = 2;
+  int col = 4;
 
   @override
   void initState() {
@@ -52,9 +56,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
     List<Widget> rowList = [];
     var cardCount = 0;
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < row; i++) {
       List<Widget> cardList = [];
-      for (int j = 0; j < 5; j++) {
+      for (int j = 0; j < col; j++) {
         cardList.add(cards[cardCount]);
         cardCount++;
       }
@@ -128,7 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
           tempTramps.remove(tramp1);
           tempTramps.remove(tramp2);
         }
-      } while (tramps.length < 30);
+      } while (tramps.length < row * col);
 
       // シャッフルする
       tempTramps.clear();
@@ -142,6 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
         tempTramps.removeAt(i);
       } while (tempTramps.length > 0);
 
+      turn = 0;
     });
   }
 
@@ -173,6 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       _closeCard();
     }
+    turn++;
   }
 
   bool _isPair() {
@@ -219,7 +225,9 @@ class _MyHomePageState extends State<MyHomePage> {
   _checkClear() {
     var clear = true;
     keys.forEach((key) {
-      if (key != null && key.currentState!= null && key.currentState.isVisible) {
+      if (key != null &&
+          key.currentState != null &&
+          key.currentState.isVisible) {
         clear = false;
       }
     });
@@ -229,27 +237,59 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  _showClearDialog() {
-    showDialog(
+  _showClearDialog() async {
+    var value = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text("ゲームクリア", textAlign: TextAlign.center),
-        content: Text("もう一度プレイしますか？", textAlign: TextAlign.center),
-        actions:[
+        content: Container(
+          height: 240,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("$turnターンでクリアできました。\nもう一度プレイしますか？",
+                  textAlign: TextAlign.center),
+              SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, "low"),
+                child: Text("初級（3x2)"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, "middle"),
+                child: Text("中級（4x5)"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, "high"),
+                child: Text("上級（5x6)"),
+              ),
+            ],
+          ),
+        ),
+        actions: [
           FlatButton(
             onPressed: () => Navigator.pop(context, "CANCEL"),
             child: Text("CANCEL"),
           ),
-          FlatButton(
-            onPressed: () => Navigator.pop(context, "OK"),
-            child: Text("OK"),
-          ),
         ],
       ),
-    ).then((value) => {
-      if (value == "OK") {
-        _onTapShuffle()
+    );
+
+    if (value != "CANCEL") {
+      switch (value) {
+        case "low":
+          col = 4;
+          row = 2;
+          break;
+        case "middle":
+          col = 4;
+          row = 5;
+          break;
+        case "high":
+          col = 5;
+          row = 6;
+          break;
       }
-    });
+      _onTapShuffle();
+    }
   }
 }
