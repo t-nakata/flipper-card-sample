@@ -12,12 +12,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flipper Card Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flipper Card Demo'),
+      home: MyHomePage(title: '一人神経衰弱'),
     );
   }
 }
@@ -51,39 +50,29 @@ class _MyHomePageState extends State<MyHomePage> {
       cards.add(_createFlipperCard(context, tramps[i], key));
     }
 
+    List<Widget> rowList = [];
+    var cardCount = 0;
+    for (int i = 0; i < 6; i++) {
+      List<Widget> cardList = [];
+      for (int j = 0; j < 5; j++) {
+        cardList.add(cards[cardCount]);
+        cardCount++;
+      }
+      rowList.add(Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: cardList,
+      ));
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
+      body: Container(
+        padding: EdgeInsets.only(bottom: 24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [cards[0], cards[1], cards[2], cards[3], cards[4]],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [cards[5], cards[6], cards[7], cards[8], cards[9]],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [cards[10], cards[11], cards[12], cards[13], cards[14]],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [cards[15], cards[16], cards[17], cards[18], cards[19]],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [cards[20], cards[21], cards[22], cards[23], cards[24]],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [cards[25], cards[26], cards[27], cards[28], cards[29]],
-            ),
-          ],
+          children: rowList,
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -126,10 +115,12 @@ class _MyHomePageState extends State<MyHomePage> {
       }
 
       // ランダムでペアを取り出す
+      final r = Random();
       do {
-        int i1 = Random().nextInt(tempTramps.length);
-        int i2 = Random().nextInt(tempTramps.length);
-        if (i1 != i2 && getNumber(tempTramps[i1]) == getNumber(tempTramps[i2])) {
+        int i1 = r.nextInt(tempTramps.length);
+        int i2 = r.nextInt(tempTramps.length);
+        if (i1 != i2 &&
+            getNumber(tempTramps[i1]) == getNumber(tempTramps[i2])) {
           final tramp1 = tempTramps[i1];
           final tramp2 = tempTramps[i2];
           tramps.add(tramp1);
@@ -141,10 +132,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
       // シャッフルする
       tempTramps.clear();
-      tramps.forEach((element) {tempTramps.add(element);});
+      tramps.forEach((element) {
+        tempTramps.add(element);
+      });
       tramps.clear();
       do {
-        int i = Random().nextInt(tempTramps.length);
+        int i = r.nextInt(tempTramps.length);
         tramps.add(tempTramps[i]);
         tempTramps.removeAt(i);
       } while (tempTramps.length > 0);
@@ -153,37 +146,40 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _onTapTramp() {
-    print("_onTapTramp()");
     var count = 0;
     for (int i = 0; i < cards.length; i++) {
       if (keys[i] != null && keys[i].currentState != null) {
         if (!keys[i].currentState.isFrontVisible) {
           count++;
-          // print("${tramps[i]}: ${getNumber(tramps[i])}");
         }
       }
     }
 
-    print("count: $count");
-
     if (count >= 2) {
-      if (_isPair()) {
-        print("isPair");
-        _getCard();
-      } else {
-        print("closeCard");
-        _closeCard();
-      }
+      // タップをブロック
+      cards.forEach((element) {
+        element.isBlock = true;
+      });
+      Future.delayed(Duration(seconds: 1), _checkPairAndRemove);
+    }
+  }
+
+  _checkPairAndRemove() {
+    cards.forEach((element) {
+      element.isBlock = false;
+    });
+    if (_isPair()) {
+      _removeCard();
+    } else {
+      _closeCard();
     }
   }
 
   bool _isPair() {
     int number = -1;
-
     for (int i = 0; i < cards.length; i++) {
       if (keys[i] != null && keys[i].currentState != null) {
         if (!keys[i].currentState.isFrontVisible) {
-          // print("${tramps[i]}: ${getNumber(tramps[i])}");
           if (number == -1) {
             number = getNumber(tramps[i]);
           } else {
@@ -199,30 +195,61 @@ class _MyHomePageState extends State<MyHomePage> {
     return false;
   }
 
-  _getCard() {
-    Future.delayed(Duration(seconds: 1)).then((_) => {
-          for (int i = 0; i < cards.length; i++)
-            {
-              if (keys[i] != null && keys[i].currentState != null)
-                {
-                  if (!keys[i].currentState.isFrontVisible) {
-                      keys[i].currentState.removeCard()
-                    }
-                }
-            }
-        });
+  _removeCard() {
+    for (int i = 0; i < cards.length; i++) {
+      if (keys[i] != null && keys[i].currentState != null) {
+        if (!keys[i].currentState.isFrontVisible) {
+          keys[i].currentState.removeCard();
+        }
+      }
+    }
+    _checkClear();
   }
 
   _closeCard() {
-    Future.delayed(Duration(seconds: 1)).then((_) => {
-          for (int i = 0; i < cards.length; i++)
-            {
-              if (keys[i] != null && keys[i].currentState != null)
-                {
-                  if (!keys[i].currentState.isFrontVisible)
-                    {keys[i].currentState.toggleSide()}
-                }
-            }
-        });
+    for (int i = 0; i < cards.length; i++) {
+      if (keys[i] != null && keys[i].currentState != null) {
+        if (!keys[i].currentState.isFrontVisible) {
+          keys[i].currentState.toggleSide();
+        }
+      }
+    }
+  }
+
+  _checkClear() {
+    var clear = true;
+    keys.forEach((key) {
+      if (key != null && key.currentState!= null && key.currentState.isVisible) {
+        clear = false;
+      }
+    });
+
+    if (clear) {
+      _showClearDialog();
+    }
+  }
+
+  _showClearDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("ゲームクリア", textAlign: TextAlign.center),
+        content: Text("もう一度プレイしますか？", textAlign: TextAlign.center),
+        actions:[
+          FlatButton(
+            onPressed: () => Navigator.pop(context, "CANCEL"),
+            child: Text("CANCEL"),
+          ),
+          FlatButton(
+            onPressed: () => Navigator.pop(context, "OK"),
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    ).then((value) => {
+      if (value == "OK") {
+        _onTapShuffle()
+      }
+    });
   }
 }

@@ -6,6 +6,7 @@ class FlipperCard extends StatefulWidget {
   final Widget frontWidget;
   final Widget backWidget;
   final VoidCallback onTapTramp;
+  bool isBlock = false;
 
   FlipperCard({
     key,
@@ -103,7 +104,7 @@ class FlipperCardState extends State<FlipperCard>
   }
 
   toggleSide() {
-    if (!isVisible) {
+    if (!isVisible || widget.isBlock) {
       return;
     }
     if (isFrontVisible) {
