@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.title}) : super(key: key);
   final String title;
 
   @override
@@ -86,7 +86,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _createFlipperCard(BuildContext context, Tramp tramp, GlobalKey key) {
+  FlipperCard _createFlipperCard(
+      BuildContext context, Tramp tramp, GlobalKey key) {
     final Size size = MediaQuery.of(context).size;
     final width = size.width / 4 - 32;
     final height = width / 409 * 600;
@@ -153,10 +154,8 @@ class _MyHomePageState extends State<MyHomePage> {
   _onTapTramp() {
     var count = 0;
     for (int i = 0; i < cards.length; i++) {
-      if (keys[i] != null && keys[i].currentState != null) {
-        if (!keys[i].currentState.isFrontVisible) {
+      if (keys[i].currentState?.isFrontVisible == false) {
           count++;
-        }
       }
     }
 
@@ -184,16 +183,14 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isPair() {
     int number = -1;
     for (int i = 0; i < cards.length; i++) {
-      if (keys[i] != null && keys[i].currentState != null) {
-        if (!keys[i].currentState.isFrontVisible) {
-          if (number == -1) {
-            number = getNumber(tramps[i]);
+      if (keys[i].currentState?.isFrontVisible == false) {
+        if (number == -1) {
+          number = getNumber(tramps[i]);
+        } else {
+          if (number == getNumber(tramps[i])) {
+            return true;
           } else {
-            if (number == getNumber(tramps[i])) {
-              return true;
-            } else {
-              return false;
-            }
+            return false;
           }
         }
       }
@@ -203,10 +200,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _removeCard() {
     for (int i = 0; i < cards.length; i++) {
-      if (keys[i] != null && keys[i].currentState != null) {
-        if (!keys[i].currentState.isFrontVisible) {
-          keys[i].currentState.removeCard();
-        }
+      if (keys[i].currentState?.isFrontVisible == false) {
+        keys[i].currentState!.removeCard();
       }
     }
     _checkClear();
@@ -214,10 +209,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _closeCard() {
     for (int i = 0; i < cards.length; i++) {
-      if (keys[i] != null && keys[i].currentState != null) {
-        if (!keys[i].currentState.isFrontVisible) {
-          keys[i].currentState.toggleSide();
-        }
+      if (keys[i].currentState?.isFrontVisible == false) {
+        keys[i].currentState!.toggleSide();
       }
     }
   }
@@ -225,9 +218,7 @@ class _MyHomePageState extends State<MyHomePage> {
   _checkClear() {
     var clear = true;
     keys.forEach((key) {
-      if (key != null &&
-          key.currentState != null &&
-          key.currentState.isVisible) {
+      if (key.currentState?.isVisible == true) {
         clear = false;
       }
     });

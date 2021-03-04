@@ -10,9 +10,9 @@ class FlipperCard extends StatefulWidget {
 
   FlipperCard({
     key,
-    this.frontWidget,
-    this.backWidget,
-    this.onTapTramp,
+    required this.frontWidget,
+    required this.backWidget,
+    required this.onTapTramp,
   }) : super(key: key);
 
   @override
@@ -21,9 +21,9 @@ class FlipperCard extends StatefulWidget {
 
 class FlipperCardState extends State<FlipperCard>
     with TickerProviderStateMixin {
-  AnimationController controller;
-  Animation<double> _frontRotation;
-  Animation<double> _backRotation;
+  late AnimationController controller;
+  late Animation<double> _frontRotation;
+  late Animation<double> _backRotation;
   bool isFrontVisible = true;
   bool isVisible = true;
 
@@ -129,13 +129,12 @@ class FlipperCardState extends State<FlipperCard>
       isFrontVisible = true;
     });
   }
-
 }
 
 class AnimatedCard extends StatelessWidget {
   AnimatedCard({
-    this.child,
-    this.animation,
+    required this.child,
+    required this.animation,
   });
 
   final Widget child;
@@ -145,17 +144,16 @@ class AnimatedCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: animation,
-      builder: (BuildContext context, Widget child) {
+      builder: (BuildContext context, Widget? child) {
         var transform = Matrix4.identity();
         transform.setEntry(3, 2, 0.001);
         transform.rotateY(animation.value);
         return Transform(
           transform: transform,
           alignment: Alignment.center,
-          child: child,
+          child: child ?? this.child,
         );
       },
-      child: child,
     );
   }
 }
