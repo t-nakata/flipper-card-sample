@@ -88,26 +88,41 @@ class _MyHomePageState extends State<MyHomePage> {
 
   FlipperCard _createFlipperCard(
       BuildContext context, Tramp tramp, GlobalKey key) {
-    final Size size = MediaQuery.of(context).size;
-    final width = size.width / 4 - 32;
-    final height = width / 409 * 600;
 
+    final cardSize = _calcCardSize(context);
     return FlipperCard(
       key: key,
       frontWidget: Container(
-        width: width,
-        height: height,
+        width: cardSize.width,
+        height: cardSize.height,
         alignment: Alignment.center,
         child: Image.asset(getImgPath(Tramp.back)),
       ),
       backWidget: Container(
-        width: width,
-        height: height,
+        width: cardSize.width,
+        height: cardSize.height,
         alignment: Alignment.center,
         child: Image.asset(getImgPath(tramp)),
       ),
       onTapTramp: () => _onTapTramp(),
     );
+  }
+
+  Size _calcCardSize(BuildContext context) {
+    final Size size = MediaQuery.of(context).size;
+
+    var width = (size.width - 32) / col;
+    var height = (size.height - 100) / row;
+
+    if (width / 409 * 600 < height) {
+      // 幅優先
+      height = width / 409 * 600;
+    } else {
+      // 高さ優先
+      width = height / 600 * 409;
+    }
+
+    return Size(width, height);
   }
 
   _onTapShuffle() {
@@ -155,7 +170,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var count = 0;
     for (int i = 0; i < cards.length; i++) {
       if (keys[i].currentState?.isFrontVisible == false) {
-          count++;
+        count++;
       }
     }
 
